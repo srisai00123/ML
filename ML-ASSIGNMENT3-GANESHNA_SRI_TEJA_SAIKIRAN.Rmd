@@ -1,0 +1,145 @@
+---
+title: "ML-ASSIGNMENT3"
+author: "BY GANESHNA SRI TEJA SAIKIRAN"
+date: "10 November 2017"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r Define your data exploration, imputation and visualization approach.}
+# Getting the library functions#
+library(missForest)
+library(datasets)
+library(VIM)
+
+# Reading data from csv file to data frame.
+Model_data=read.csv(file="Model_Data.csv",header = TRUE)
+
+#Information about data.
+summary(Model_data)
+str(Model_data)
+#Q2) Define your data exploration, imputation and visualization approach.
+
+#Visualization presentation of the Imputed_data 
+
+imputation_plot<- aggr(Model_data,col=c('green','violet'),numbers=TRUE,sortVars=TRUE,lables=names(Model_data),cex.axis=.9,gap=2,ylab=c("Missing Data","Pattern"))
+```
+```{r set.seed for sampling & Split model data into train (80%) and test (20%)}
+
+#Q4) Set seed for sampling (your roll number) Eg. Set.seed(17125760345)
+set.seed(080)
+
+#Q5) Split model data into train (80%) and test (20%)
+dt = sort(sample(nrow(Model_data), nrow(Model_data)*.8))
+trainModel_data<-Model_data[dt,]
+testModel_data<-Model_data[-dt,]
+
+```
+```{r Model 1-Decision Tree }
+#Q6) Build 3 Models, each using one of different type of algorithm. Send me the model building command.
+    #Model 1-Decision Tree 
+#Preparing model for train data#
+library(tree)
+tree_model=tree(Salary~.,data=trainModel_data)
+summary(tree_model)
+plot(tree_model)
+text(tree_model)
+
+#prediting the model for test data#
+model.prediction=predict(tree_model,testModel_data)
+maxidx=function(arr){
+  return(which(arr==max(arr)))}
+idx=apply(model.prediction,c(1),maxidx)
+modelprediction=c('<=50K ','>50K')[idx]
+#confusion matrix for test data#
+
+confmatDecisionTree=table(modelprediction,testModel_data$Salary)
+#Decision Tree Model Confusion Matrix:
+confmatDecisionTree
+#finding the accuracy of prediction#
+accuracyDecisionTree=sum(diag(confmatDecisionTree))/sum(confmatDecisionTree)
+#Decision Tree Model Accuracy:
+accuracyDecisionTree
+```
+
+```{r Model 2-K NEAREST NEIGHBOUR}
+#Model 2-K NEAREST NEIGHBOUR
+pc_data=read.csv(file="Model_Data.csv",header = TRUE)
+set.seed(080)
+for(i in 1:15){
+  pc_data[,i]=as.integer(pc_data[,i])
+}
+dt = sort(sample(nrow(pc_data), nrow(pc_data)*.8))
+pc_train_data<-pc_data[dt,1:14]
+pc_test_data<-pc_data[-dt,1:14]
+
+#dividing test and train data only 1 labled column
+pc_train_label<-pc_data[dt,15]
+pc_test_label<-pc_data[-dt,15]
+
+library(class)
+k=10
+#Model for k Nearest neigbour 
+pc_pred_label=knn(train=pc_train_data,test=pc_test_data,cl=pc_train_label,k)
+
+#confusion matrix
+confmatKNN=table(pc_test_label,pc_pred_label)
+#KNN MODEL CONFUSION MATRIX:
+confmatKNN
+#accuracy 
+accuracyKNN = sum(diag(confmatKNN))/sum(confmatKNN)
+#KNN MODEL ACCURACY:
+accuracyKNN
+```
+
+```{r Model 3-Naïve Bayes}
+#Model 3-Naïve Bayes
+library(e1071)
+Naive_data=read.csv(file="Model_Data.csv",header = TRUE)
+set.seed(080)
+sample = sort(sample(nrow(Naive_data), nrow(Naive_data)*.8))
+Naive_data_train<-Naive_data[sample,]
+Naive_data_test<-Naive_data[-sample,]
+
+#naiveBayes
+model=naiveBayes(Salary~.,data=Naive_data_train)
+pred=predict(model,Naive_data_test[,-1])
+Naive_Bayes_confmat=table(pred,Naive_data_test$Salary)
+#Naive Bayes Confusion Matrix:
+Naive_Bayes_confmat
+Naive_Bayes_accuracy=sum(diag(Naive_Bayes_confmat))/sum(Naive_Bayes_confmat)
+#Naive Bayes accuracy:
+Naive_Bayes_accuracy
+```
+
+```{r Q7) Predict your model performance on each of the 3 models and submit}
+#Q7) Predict your model performance on each of the 3 models and submit
+#Decision Tree Model Accuracy:
+accuracyDecisionTree
+
+#KNN MODEL ACCURACY:
+accuracyKNN
+
+#Naive Bayes accuracy:
+Naive_Bayes_accuracy
+```
+```{r Q8) Generalization}
+#Q8) Generalization
+
+#From three models Decision Tree / kNN / Naïve Bayes as per accuracy for given dataset Decision Tree model is more accurate than remaining two models.
+
+#Decision Tree Model Accuracy:
+
+accuracyDecisionTree
+```
