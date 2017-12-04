@@ -1,0 +1,131 @@
+---
+title: "flexdashboard-Narandra Modi-Twitter_Analysis (2016-2017)"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: scroll
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(RColorBrewer)
+library(tm)
+library(wordcloud)
+narendramodi_tweets<-read.csv(file="narendramodi_tweets.csv",header = TRUE)
+narendramodi_tweets<-narendramodi_tweets%>%mutate(Year= format(as.Date(narendramodi_tweets$created_at,'%Y-%m-%d'),'%Y'),Month= format(as.Date(narendramodi_tweets$created_at,'%Y-%m-%d'),'%m'),Day= format(as.Date(narendramodi_tweets$created_at,'%Y-%m-%d'),'%d'))
+```
+
+ROW
+-----------------------------------------------------------------------
+### Followers
+```{r}
+#valueBox(10000, icon="fa-users",color="green")
+No_of_followers=max(narendramodi_tweets$followers_count)
+valueBox(No_of_followers, icon="fa-users")
+
+```
+
+### Total Tweets
+```{r}
+Total_No_Tweets=nrow(narendramodi_tweets)
+valueBox(Total_No_Tweets,icon="fa-twitter")
+```
+
+### Average Retweets
+```{r}
+Avg_Retweets=mean(narendramodi_tweets$retweets_count)
+Avg_Retweets=round(Avg_Retweets)
+valueBox(Avg_Retweets,icon="fa-retweet")
+```
+
+ROW 
+-----------------------------------------------------------------------
+
+### scatter plot with the following details X axis contains number of retweets Y axis contains number of likes Color represents device from which it was tweeted
+```{r}
+ggplotly_graphs=ggplot(narendramodi_tweets,aes(x=retweets_count,y=favorite_count,color=source))+geom_point()+geom_smooth()+xlab('Number of Retweets')+ylab('Number of Likes')
+
+ggplotly(ggplotly_graphs)
+```
+
+ROW
+-----------------------------------------------------------------------
+
+### Stacked bar chart to visualize month-wise total number of tweets from each device.
+```{r }
+Tweets_Monthwise<-narendramodi_tweets%>%group_by(Month,source)%>%summarise(Tol_no_twets_each_dev=n())
+
+# Plot the stacked bar chart.
+ggplot_graph1=ggplot(data = Tweets_Monthwise, aes(x =Month , y = Tol_no_twets_each_dev, fill = source)) + geom_bar(stat='identity')
+
+ggplotly(ggplot_graph1)
+```
+
+ROW 
+-----------------------------------------------------------------------
+###  Heat map or tile plot to visualize number of tweets by month of the year
+```{r}
+Tweets_mon_year<-narendramodi_tweets%>%group_by(Year,Month)%>%summarise(Total_no_tweets=n())
+ggplot_graph2=ggplot(Tweets_mon_year,aes(x=Year,y=Month,fill=-Total_no_tweets))+geom_tile()
+
+ggplotly(ggplot_graph2)
+
+```
+
+###  Heat map or tile plot to visualize number of tweets by Day of the Month
+```{r}
+Tweets_day_mon<-narendramodi_tweets%>%group_by(Month,Day)%>%summarise(Total_no_tweetss=n())
+ggplot_graph3=ggplot(Tweets_day_mon,aes(x=Month,y=Day,fill=-Total_no_tweetss))+geom_tile()
+
+
+ggplotly(ggplot_graph3)
+```
+
+ROW 
+-----------------------------------------------------------------------
+
+### Word Cloud For Narendra Modi Tweets
+
+```{r}
+
+#using text mining removing common stopwords and applying wordcloud.
+common_stop_words=stopwords()
+
+#Text mining for tweeter data
+narendramodi_tweets$text = as.character(narendramodi_tweets$text)
+narendramodi_tweets$text = tolower(narendramodi_tweets$text)
+
+narendramodi_tweets$text = gsub('[^a-z] ', ' ' , narendramodi_tweets$text)
+
+words_all = unlist(strsplit(narendramodi_tweets$text,' '))
+
+words_freq=as.data.frame(table(words_all))
+
+words_top=words_freq%>%filter(!words_all%in%common_stop_words)%>%arrange(-Freq)%>%head(150)
+
+wordcloud(words_top$words_all,words_top$Freq,colors=words_top$Freq)
+
+```
+
+### Word cloud by filtering # tag.
+
+```{r}
+hashtags_words=words_freq[startsWith(as.character(words_freq$words_all),'#'),]
+hashtags_words_top=hashtags_words%>%arrange(-Freq)%>%head(150)
+wordcloud(hashtags_words_top$words_all,hashtags_words_top$Freq,colors=hashtags_words_top$Freq)
+```
+
+ROW
+-----------------------------------------------------------------------
+
+### Plot line graph 
+
+```{r}
+Tweets_mon_yearwise<-narendramodi_tweets%>%group_by(Month)%>%summarise(Total_no_tweets=n())
+ggplot_graph_yearwise=ggplot(Tweets_mon_yearwise,aes(x=Month,y=Total_no_tweets))+geom_line(group=1)
+
+ggplotly(ggplot_graph_yearwise)
+```
