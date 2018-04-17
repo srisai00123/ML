@@ -1,0 +1,56 @@
+---
+title: "Recommended_system_shopalyst"
+author: "Ganeshna sri teja saikiran"
+date: "31 January 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Loading data
+```{r}
+library(data.table)
+library(reshape2)
+
+shopperlyst_rec = read.csv(file.choose())
+colnames(shopperlyst_rec) = c("TimeStamp", "Event", "Product_Id", "Shopper_Id", "department", "category", "sub_category", "gender", "brand")
+set.seed(111)
+
+```
+
+
+#2 Identify the top 5 products (from the event log) that could be recommended to the below customers:
+
+```{r}
+library(recommenderlab)
+library(reshape2)
+
+product = acast(shopperlyst_rec[c(1:10000) , c("Shopper_Id", "Product_Id")],
+                      Shopper_Id ~ Product_Id,length)
+
+product = as(product, "realRatingMatrix")
+
+product_shop = binarize(product, minRating = 1)
+
+rec = Recommender(product_shop[1:nrow(product_shop)],method="UBCF")
+
+product_item = function(customer_key) {
+  
+  cust_products = product[customer_key,]
+  product_sshop = as(as(cust_products, "matrix"), "binaryRatingMatrix")
+
+  recom = predict(rec, product_sshop,n=5)
+  
+  return(as(recom,"list"))
+}
+
+product_item("4590FBB2C98F98BF51769EB162F527D9")
+product_item("135BC3FBD2C32B6F2DC6BAA92EA63747")
+product_item("DCF1C2CD4351DF74551E7AE3A5365983")
+
+
+
+
+
