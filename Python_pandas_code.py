@@ -150,3 +150,19 @@ data['YEAR'].nunique() #Which gives the count of unque values in column
 
 data['YEAR'].value_counts() #counts the values year wise
 
+#Apply
+def times1(x):
+    return x*2 
+
+df['Position'].apply(times1)
+
+df['Position'].apply(len)
+
+df['Position'].apply(lambda x: x*2)
+
+df.drop('position',axis=1,inplace=True)
+
+df.sort_values(by='position')
+df.isnull()
+
+#pivot table check it 
