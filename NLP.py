@@ -125,3 +125,6 @@ text_mnb_stemmed = text_mnb_stemmed.fit(twenty_train.data, twenty_train.target)
 predicted_mnb_stemmed = text_mnb_stemmed.predict(twenty_test.data)
 
 np.mean(predicted_mnb_stemmed == twenty_test.target)
+
+
+http://textblob.readthedocs.io/en/dev/classifiers.html
