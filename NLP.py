@@ -128,3 +128,7 @@ np.mean(predicted_mnb_stemmed == twenty_test.target)
 
 
 http://textblob.readthedocs.io/en/dev/classifiers.html
+  
+  https://stackoverflow.com/questions/15173225/calculate-cosine-similarity-given-2-sentence-strings
+    https://github.com/shubhamvadhera/knn-n-fold-classification/blob/master/knn-mean-accuracy.py
+      https://www.kaggle.com/hengqujushi/cosine-similarity-nlp
